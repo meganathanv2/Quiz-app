@@ -1,0 +1,57 @@
+<html>
+
+<head>
+    <title>My Quiz app</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <nav class="nav-bar">
+        <h3 class="nav-title">My Quiz app</h3>
+    </nav>
+
+    <div class="main-div">
+        <form>
+            <label class="category-label">category</label>
+            <select name="category" id="category" class="category-select">
+                <option value="DBMS">DBMS</option>
+                <option value="OS">OS</option>
+                <option value="Java">Java</option>
+            </select>
+            <br />
+            <label class="difficulty-label">Difficulty</label>
+            <select name="difficulty" id="difficulty" class="difficulty-select">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+            </select>
+            <br />
+            <p class="nb-qestion">Number of Questions : 15</p>
+            <p class="">Total Time is 20 minutes</p>
+            <button id="save" type="button">Start Quiz</button>
+
+        </form>
+    </div>
+    <div id="quiz-question" class="question-class hidden">
+
+        <span id="qp-category">category : </span>
+        <span id="display-category"></span>
+        <span id="num-question">Questions :</span>
+        <span id="display-num-question"></span>
+        <span id="time-quiz">Time Left:</span>
+        <span id="display-time-quiz"></span>
+        <span id="display-overall-time"></span>
+        <div id="question-section">
+
+            <h3>Question :</h3>
+            <div id="display-all-question">
+            </div>
+        </div>
+        <button type="button" id="previous">Previous</button>
+        <button type="button" id="next">Next</button>
+        <button type="button" id="submit-quiz">Submit Quiz</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
