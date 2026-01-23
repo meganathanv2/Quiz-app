@@ -69,7 +69,12 @@ let overallTimerId;
 let userAnswers = [];
 let score = 0;
 
+let startDateTime;
+
+
+
 const startButton = document.getElementById("save");
+const submitButton = document.getElementById("submit-quiz");
 const nextButton = document.getElementById("next");
 const prevButton = document.getElementById("previous");
 
@@ -79,11 +84,33 @@ const displayNumQuestion = document.getElementById("num-question");
 const questionDiv = document.getElementById("display-all-question");
 const timeDisplay = document.getElementById("display-overall-time");
 
+const retryButton = document.getElementById("retry-quiz");
+const displayScore = document.getElementById("display-score");
+const displayOverallTime = document.getElementById("time-taken");
+const reviewAnswerButton = document.getElementById("view-answer");
+const attemptedDetailButton = document.getElementById("attempted-detail");
+
+function hideAll() {
+    quizSection.classList.add("hidden");
+
+    document.getElementById("result-quiz").classList.add("hidden");
+    document.getElementById("answer-review").classList.add("hidden");
+    document.getElementById("attempt-container").classList.add("hidden");
+}
 
 
-startButton.addEventListener("click", function () {
+startButton.addEventListener("click", () => {
     selectedCategory = document.getElementById("category").value;
-    currentQuestion = quizData[selectedCategory];
+    startDateTime = new Date();
+    localStorage.setItem("startTime", startDateTime.toString().split("GMT")[0].trim());
+    localStorage.setItem("category", selectedCategory);
+    currentQuestion = JSON.parse(JSON.stringify(quizData[selectedCategory]));
+    shuffleArray(currentQuestion);
+    currentQuestion.forEach(q => {
+        const correctAns = q.options[q.correctIndex];
+        shuffleArray(q.options);
+        q.correctIndex = q.options.indexOf(correctAns);
+    })
     currentIndex = 0;
     overallTime = timePerQuestion * currentQuestion.length;
     startOverallTimer();
@@ -92,30 +119,44 @@ startButton.addEventListener("click", function () {
 
 
 });
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
 function showQuestion() {
 
     stopTimer();
     startTimer();
+    nextButton.disabled = true;
     quizSection.classList.remove("hidden");
     const currentQ = currentQuestion[currentIndex];
     displayCategory.textContent = selectedCategory;
     displayNumQuestion.textContent = `${currentIndex + 1} of ${currentQuestion.length}`;
+    calculateProgress();
 
     let optionsHtml = "";
     currentQ.options.forEach((option, index) => {
         optionsHtml += `<div>
-            <input type="radio" name="option" id="option${index}" value="${index}">
+            <input type="radio" name="option" id="option${index}" value="${index}"onclick="enableNext()">
             <label for="option${index}">${option}</label>
         </div>`;
     });
     questionDiv.innerHTML = `<h3>${currentQ.question}</h3>${optionsHtml}`;
     if (userAnswers[currentIndex] !== undefined) {
         document.getElementById(`option${userAnswers[currentIndex]}`).checked = true;
+        nextButton.disabled = false;
     }
 
 }
+function enableNext() {
+    nextButton.disabled = false;
+}
 nextButton.addEventListener("click", () => {
     saveAnswer();
+
     if (currentIndex < currentQuestion.length - 1) {
         currentIndex++;
         showQuestion();
@@ -154,13 +195,16 @@ function saveAnswer() {
     const selected = document.querySelector('input[name="option"]:checked');
     if (selected) {
         userAnswers[currentIndex] = Number(selected.value);
+
     }
 
 }
 
-document.getElementById("submit-quiz").addEventListener("click", () => {
+submitButton.addEventListener("click", () => {
     saveAnswer();
     calculateScore();
+    displayResult();
+
 })
 
 function calculateScore() {
@@ -170,7 +214,11 @@ function calculateScore() {
             score++;
         }
     })
-    alert(`your score is ${score}/${currentQuestion.length}`);
+    stopTimer();
+    clearInterval(overallTimerId);
+
+
+
 }
 
 function startOverallTimer() {
@@ -189,3 +237,86 @@ function startOverallTimer() {
 
     }, 1000);
 }
+
+function calculateProgress() {
+    const processPercent = ((currentIndex + 1) / currentQuestion.length) * 100;
+    document.getElementById("display-progress").textContent = `${processPercent.toFixed(2)}%`;
+}
+
+function displayResult() {
+    displayScore.textContent = `${score}/${currentQuestion.length}`;
+    localStorage.setItem("score", score);
+    displayOverallTime.textContent = `Time Taken :${Math.floor((timePerQuestion * currentQuestion.length - overallTime) / 60)}:${(timePerQuestion * currentQuestion.length - overallTime) % 60 < 10 ? "0" : ""}${(timePerQuestion * currentQuestion.length - overallTime) % 60}`;
+    saveAttemptedLocalStorage();
+    renderAttemptTable();
+
+}
+
+function saveAttemptedLocalStorage() {
+    const attemts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
+    const timeTakensec = timePerQuestion * currentQuestion.length - overallTime;
+    const minutes = Math.floor(timeTakensec / 60);
+    const seconds = timeTakensec % 60;
+    const attempt = {
+        date: localStorage.getItem("startTime"),
+        category: selectedCategory,
+        score: score,
+        timeTaken: `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+    };
+    attemts.push(attempt);
+    localStorage.setItem("attemptedDetail", JSON.stringify(attemts));
+}
+
+function renderAttemptTable() {
+    const attemts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
+    let tableHtml = `<table>
+    <tr>
+    <th>Date & Time</th>
+    <th>Category</th>
+    <th>Score</th>
+    <th>Time Taken</th>
+    </tr>`;
+    attemts.forEach(attempt => {
+        tableHtml += `<tr>
+        <td>${attempt.date}</td>
+        <td>${attempt.category}</td>
+        <td>${attempt.score}</td>
+        <td>${attempt.timeTaken}</td>
+        </tr>`;
+    }
+    );
+    tableHtml += `</table>`;
+    document.getElementById("attempted-detail-section").innerHTML = tableHtml;
+}
+
+
+reviewAnswerButton.addEventListener("click", () => {
+    let reviewhtml = "";
+    currentQuestion.forEach((q, index) => {
+        reviewhtml += `<div>
+        <h3>Q${index + 1}:${q.question}</h3>
+        <p>your answer :${userAnswers[index] !== undefined ? q.options[userAnswers[index]] : "Not answered"}</p>
+        <p>correct answer :${q.options[q.correctIndex]}</p>
+        </div>`;
+    });
+
+    document.getElementById("review-section").innerHTML = reviewhtml;
+    generateAttemptedDetail();
+})
+
+
+retryButton.addEventListener("click", () => {
+    location.reload();
+
+})
+
+// function BestScore() {
+//     const attemts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
+//     const bestScoreContainer = document.getElementById("score-list");
+//     bestScoreContainer.innerHTML = "";
+//     if (attemts.length === 0) {
+//         bestScoreContainer.innerHTML = "<p>No attempt was happened";
+//     }
+// }
+
+
