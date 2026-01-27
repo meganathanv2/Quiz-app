@@ -1,4 +1,3 @@
-
 const quizData = {
     DBMS: [
         { question: "What does DBMS stand for?", options: ["Database Management System", "Data Management Software", "Digital Management System", "Data Backup System"], correctIndex: 0 },
@@ -17,7 +16,6 @@ const quizData = {
         { question: "Which key can have NULL values?", options: ["Primary key", "Foreign key", "Candidate key", "Super key"], correctIndex: 1 },
         { question: "Which DBMS is open-source?", options: ["Oracle", "MySQL", "SQL Server", "DB2"], correctIndex: 1 }
     ],
-
     OS: [
         { question: "What is an Operating System?", options: ["Application software", "System software", "Utility software", "Hardware"], correctIndex: 1 },
         { question: "Which OS is open source?", options: ["Windows", "Linux", "MacOS", "DOS"], correctIndex: 1 },
@@ -35,7 +33,6 @@ const quizData = {
         { question: "Which handles I/O devices?", options: ["Drivers", "Compiler", "CPU", "Memory"], correctIndex: 0 },
         { question: "Which is real-time OS?", options: ["Windows", "RTOS", "Linux", "MacOS"], correctIndex: 1 }
     ],
-
     Java: [
         { question: "Java is a ___ language.", options: ["Low-level", "High-level", "Machine-level", "Assembly-level"], correctIndex: 1 },
         { question: "Which company developed Java?", options: ["Microsoft", "Sun Microsystems", "Google", "IBM"], correctIndex: 1 },
@@ -55,207 +52,279 @@ const quizData = {
     ]
 };
 
-
-
 let selectedCategory = "";
 let currentQuestion = [];
 let currentIndex = 0;
-
 let timePerQuestion = 20;
 let countdown;
 let overallTime = 0;
 let overallTimerId;
-
 let userAnswers = [];
 let score = 0;
-
-let startDateTime;
-
-
+let arr;
 
 const startButton = document.getElementById("save");
 const submitButton = document.getElementById("submit-quiz");
 const nextButton = document.getElementById("next");
 const prevButton = document.getElementById("previous");
-
-const quizSection = document.getElementById("quiz-question");
 const displayCategory = document.getElementById("display-category");
 const displayNumQuestion = document.getElementById("num-question");
 const questionDiv = document.getElementById("display-all-question");
 const timeDisplay = document.getElementById("display-overall-time");
-
 const retryButton = document.getElementById("retry-quiz");
 const displayScore = document.getElementById("display-score");
 const displayOverallTime = document.getElementById("time-taken");
 const reviewAnswerButton = document.getElementById("view-answer");
+const displayReviewQuestion = document.getElementById("review-section");
 const attemptedDetailButton = document.getElementById("attempted-detail");
+const progressBar = document.getElementById("progress-bar");
+const progressText = document.getElementById("progress-text");
 
-function hideAll() {
-    quizSection.classList.add("hidden");
+if (startButton) {
+    startButton.addEventListener("click", () => {
+        selectedCategory = document.getElementById("category").value;
+        localStorage.setItem("category", selectedCategory);
+        localStorage.setItem("startTime", new Date().toString().split("GMT")[0].trim());
 
-    document.getElementById("result-quiz").classList.add("hidden");
-    document.getElementById("answer-review").classList.add("hidden");
-    document.getElementById("attempt-container").classList.add("hidden");
+
+        localStorage.setItem("userAnswers", JSON.stringify([]));
+        window.location.href = "quiz.html";
+    });
 }
 
-
-startButton.addEventListener("click", () => {
-    selectedCategory = document.getElementById("category").value;
-    startDateTime = new Date();
-    localStorage.setItem("startTime", startDateTime.toString().split("GMT")[0].trim());
-    localStorage.setItem("category", selectedCategory);
-    currentQuestion = JSON.parse(JSON.stringify(quizData[selectedCategory]));
-    shuffleArray(currentQuestion);
-    currentQuestion.forEach(q => {
-        const correctAns = q.options[q.correctIndex];
-        shuffleArray(q.options);
-        q.correctIndex = q.options.indexOf(correctAns);
-    })
-    currentIndex = 0;
-    overallTime = timePerQuestion * currentQuestion.length;
-    startOverallTimer();
-    quizSection.classList.remove("hidden");
-    showQuestion();
-
-
-});
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
 }
+
+
 
 function showQuestion() {
-
     stopTimer();
     startTimer();
-    nextButton.disabled = true;
-    quizSection.classList.remove("hidden");
-    const currentQ = currentQuestion[currentIndex];
+    if (!questionDiv) return;
+
+    const q = currentQuestion[currentIndex];
     displayCategory.textContent = selectedCategory;
     displayNumQuestion.textContent = `${currentIndex + 1} of ${currentQuestion.length}`;
-    calculateProgress();
 
-    let optionsHtml = "";
-    currentQ.options.forEach((option, index) => {
-        optionsHtml += `<div>
-            <input type="radio" name="option" id="option${index}" value="${index}"onclick="enableNext()">
-            <label for="option${index}">${option}</label>
-        </div>`;
+    let html = "";
+    q.options.forEach((op, i) => {
+        html += `<div>
+                    <input type="radio" name="option" id="option${i}" value="${i}" onclick="enableNext()">
+                    <label for="option${i}">${op}</label>
+                 </div>`;
     });
-    questionDiv.innerHTML = `<h3>${currentQ.question}</h3>${optionsHtml}`;
+    questionDiv.innerHTML = `<h3>${q.question}</h3>${html}`;
+
     if (userAnswers[currentIndex] !== undefined) {
         document.getElementById(`option${userAnswers[currentIndex]}`).checked = true;
+    }
+
+    if (prevButton) prevButton.disabled = currentIndex === 0;
+    if (nextButton) nextButton.disabled = currentIndex === currentQuestion.length - 1;
+
+
+}
+
+
+
+function enableNext() {
+    if (nextButton && currentIndex < currentQuestion.length - 1) {
         nextButton.disabled = false;
     }
-
 }
-function enableNext() {
-    nextButton.disabled = false;
+
+
+if (nextButton) {
+    nextButton.addEventListener("click", () => {
+        saveAnswer();
+        if (currentIndex < currentQuestion.length - 1) {
+            currentIndex++;
+            showQuestion();
+        }
+    });
 }
-nextButton.addEventListener("click", () => {
-    saveAnswer();
 
-    if (currentIndex < currentQuestion.length - 1) {
-        currentIndex++;
-        showQuestion();
-    }
-});
-
-prevButton.addEventListener("click", () => {
-    saveAnswer();
-    if (currentIndex > 0) {
-        currentIndex--;
-        showQuestion();
-    }
-});
+if (prevButton) {
+    prevButton.addEventListener("click", () => {
+        saveAnswer();
+        if (currentIndex > 0) {
+            currentIndex--;
+            showQuestion();
+        }
+    });
+}
 
 function startTimer() {
-    let timeLeft = timePerQuestion;
-    document.getElementById("display-time-quiz").textContent = `Time Left :${timeLeft}`;
+    const element = document.getElementById("display-time-quiz");
+    if (!element) return;
+
+    clearInterval(countdown);
+
+    let t = arr[currentIndex] ?? timePerQuestion;
+    element.textContent = `Time Left : ${t}`;
+
     countdown = setInterval(() => {
-        timeLeft--;
-        document.getElementById("display-time-quiz").textContent = `Time Left :${timeLeft}`;
-        if (timeLeft <= 0) {
+        t--;
+        arr[currentIndex] = t;
+        element.textContent = `Time Left : ${t}`;
+
+        if (t <= 0) {
             clearInterval(countdown);
             saveAnswer();
+
             if (currentIndex < currentQuestion.length - 1) {
                 currentIndex++;
                 showQuestion();
-
+            } else {
+                localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
+                calculateScore();
+                window.location.href = "result.html";
             }
+
         }
     }, 1000);
 }
+
+
 function stopTimer() {
     clearInterval(countdown);
 }
+
 function saveAnswer() {
-    const selected = document.querySelector('input[name="option"]:checked');
-    if (selected) {
-        userAnswers[currentIndex] = Number(selected.value);
+    const sel = document.querySelector('input[name="option"]:checked');
+    if (!sel) return;
 
+    const previousAnswer = userAnswers[currentIndex];
+    const newAnswer = Number(sel.value);
+
+    userAnswers[currentIndex] = newAnswer;
+
+    if (previousAnswer === undefined) {
+        calculateProgress();
     }
-
 }
 
-submitButton.addEventListener("click", () => {
-    saveAnswer();
-    calculateScore();
-    displayResult();
 
-})
+
+if (submitButton) {
+    submitButton.addEventListener("click", () => {
+        saveAnswer();
+        localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
+        calculateScore();
+        window.location.href = "result.html";
+    });
+}
+
 
 function calculateScore() {
     score = 0;
-    currentQuestion.forEach((q, index) => {
-        if (userAnswers[index] === q.correctIndex) {
-            score++;
-        }
-    })
-    stopTimer();
-    clearInterval(overallTimerId);
-
-
-
-}
-
-function startOverallTimer() {
-    clearInterval(overallTimerId);
-    overallTimerId = setInterval(() => {
-        let minutes = Math.floor(overallTime / 60);
-        let second = overallTime % 60;
-        timeDisplay.textContent = `overall Time Left :${minutes}:${second < 10 ? "0" : ""}${second}`
-        overallTime--;
-        if (overallTime < 0) {
-            clearInterval(overallTimerId);
-            saveAnswer();
-            calculateScore();
-
-        }
-
-    }, 1000);
-}
-
-function calculateProgress() {
-    const processPercent = ((currentIndex + 1) / currentQuestion.length) * 100;
-    document.getElementById("display-progress").textContent = `${processPercent.toFixed(2)}%`;
-}
-
-function displayResult() {
-    displayScore.textContent = `${score}/${currentQuestion.length}`;
+    currentQuestion.forEach((q, i) => {
+        if (userAnswers[i] === q.correctIndex) score++;
+    });
     localStorage.setItem("score", score);
-    displayOverallTime.textContent = `Time Taken :${Math.floor((timePerQuestion * currentQuestion.length - overallTime) / 60)}:${(timePerQuestion * currentQuestion.length - overallTime) % 60 < 10 ? "0" : ""}${(timePerQuestion * currentQuestion.length - overallTime) % 60}`;
-    saveAttemptedLocalStorage();
-    renderAttemptTable();
+}
+function calculateProgress() {
+    if (!currentQuestion.length) {
+        progressText.textContent = "0%";
+        return;
+    }
 
+    const answeredCount = userAnswers.filter(ans => ans !== undefined).length;
+    const progressPercent = (answeredCount / currentQuestion.length) * 100;
+    progressText.textContent = `${progressPercent.toFixed(2)}%`;
 }
 
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    if (document.getElementById("quiz-question")) {
+
+        selectedCategory = localStorage.getItem("category");
+
+        currentQuestion = JSON.parse(JSON.stringify(quizData[selectedCategory]));
+        localStorage.setItem("userAnswers", JSON.stringify([]));
+
+        shuffleArray(currentQuestion);
+
+        userAnswers = new Array(currentQuestion.length);
+        calculateProgress();
+
+        arr = Array(currentQuestion.length).fill(timePerQuestion);
+
+        currentQuestion.forEach(q => {
+            const ans = q.options[q.correctIndex];
+            shuffleArray(q.options);
+            q.correctIndex = q.options.indexOf(ans);
+        });
+
+        overallTime = currentQuestion.length * timePerQuestion;
+        startOverallTimer();
+        showQuestion();
+    }
+
+
+    if (document.getElementById("result-quiz")) {
+        displayScore.textContent = `${localStorage.getItem("score")}/15`;
+        displayOverallTime.textContent = "";
+        saveAttemptedLocalStorage();
+    }
+
+
+    if (document.getElementById("answer-review")) {
+        selectedCategory = localStorage.getItem("category");
+        userAnswers = JSON.parse(localStorage.getItem("userAnswers")) || [];
+        currentQuestion = JSON.parse(JSON.stringify(quizData[selectedCategory]));
+        let reviewhtml = "";
+        currentQuestion.forEach((q, index) => {
+            reviewhtml += `<div>
+        <h3>Q${index + 1}:${q.question}</h3>
+        <p>your answer :${userAnswers[index] !== undefined ? q.options[userAnswers[index]] : "Not answered"}</p>
+        <p>correct answer :${q.options[q.correctIndex]}</p>
+        </div>`;
+        });
+
+        document.getElementById("review-section").innerHTML = reviewhtml;
+    }
+
+    if (document.getElementById("attempt-container")) {
+        const attemts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
+        let tableHtml = `<table>
+    <tr>
+    <th>Date & Time</th>
+    <th>Category</th>
+    <th>Score</th>
+    <th>Time Taken</th>
+    </tr>`;
+        attemts.forEach(attempt => {
+            tableHtml += `<tr>
+        <td>${attempt.date}</td>
+        <td>${attempt.category}</td>
+        <td>${attempt.score}</td>
+        <td>${attempt.timeTaken}</td>
+        </tr>`;
+        }
+        );
+        tableHtml += `</table>`;
+        document.getElementById("attempted-detail-section").innerHTML = tableHtml;
+
+    }
+})
 function saveAttemptedLocalStorage() {
-    const attemts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
-    const timeTakensec = timePerQuestion * currentQuestion.length - overallTime;
+    const attempts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
+    const startTimestamp = Number(localStorage.getItem("startTimestamp"));
+    const selectedCategory = localStorage.getItem("category");
+    const score = localStorage.getItem("score");
+    const endTimestamp = Date.now();
+    if (!startTimestamp) return;
+    const timeTakensec = Math.floor((endTimestamp - startTimestamp) / 1000);
+    console.log(timeTakensec);
     const minutes = Math.floor(timeTakensec / 60);
+    console.log(minutes);
     const seconds = timeTakensec % 60;
     const attempt = {
         date: localStorage.getItem("startTime"),
@@ -263,60 +332,41 @@ function saveAttemptedLocalStorage() {
         score: score,
         timeTaken: `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
     };
-    attemts.push(attempt);
-    localStorage.setItem("attemptedDetail", JSON.stringify(attemts));
-}
+    attempts.push(attempt);
+    localStorage.setItem("attemptedDetail", JSON.stringify(attempts));
 
-function renderAttemptTable() {
-    const attemts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
-    let tableHtml = `<table>
-    <tr>
-    <th>Date & Time</th>
-    <th>Category</th>
-    <th>Score</th>
-    <th>Time Taken</th>
-    </tr>`;
-    attemts.forEach(attempt => {
-        tableHtml += `<tr>
-        <td>${attempt.date}</td>
-        <td>${attempt.category}</td>
-        <td>${attempt.score}</td>
-        <td>${attempt.timeTaken}</td>
-        </tr>`;
-    }
-    );
-    tableHtml += `</table>`;
-    document.getElementById("attempted-detail-section").innerHTML = tableHtml;
 }
 
 
-reviewAnswerButton.addEventListener("click", () => {
-    let reviewhtml = "";
-    currentQuestion.forEach((q, index) => {
-        reviewhtml += `<div>
-        <h3>Q${index + 1}:${q.question}</h3>
-        <p>your answer :${userAnswers[index] !== undefined ? q.options[userAnswers[index]] : "Not answered"}</p>
-        <p>correct answer :${q.options[q.correctIndex]}</p>
-        </div>`;
+function startOverallTimer() {
+    if (!timeDisplay) return;
+    clearInterval(overallTimerId);
+    overallTimerId = setInterval(() => {
+        let m = Math.floor(overallTime / 60);
+        let s = overallTime % 60;
+        timeDisplay.textContent = `Overall Time Left :${m}:${s < 10 ? "0" : ""}${s}`;
+        overallTime--;
+        if (overallTime < 0) {
+            clearInterval(overallTimerId);
+            saveAnswer();
+            calculateScore();
+            window.location.href = "result.html";
+        }
+    }, 1000);
+}
+
+if (retryButton) {
+    retryButton.addEventListener("click", () => {
+        localStorage.removeItem("userAnswers");
+        localStorage.removeItem("score");
+        window.location.href = "quiz.html";
     });
+}
 
-    document.getElementById("review-section").innerHTML = reviewhtml;
-    generateAttemptedDetail();
-})
-
-
-retryButton.addEventListener("click", () => {
-    location.reload();
-
-})
-
-// function BestScore() {
-//     const attemts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
-//     const bestScoreContainer = document.getElementById("score-list");
-//     bestScoreContainer.innerHTML = "";
-//     if (attemts.length === 0) {
-//         bestScoreContainer.innerHTML = "<p>No attempt was happened";
-//     }
-// }
+if (reviewAnswerButton) {
+    reviewAnswerButton.addEventListener("click", () => {
+        window.location.href = "review.html";
+    });
+}
 
 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="nav-bar">
+        <h3 class="nav-title">My Quiz app</h3>
+    </nav>
+
+    <div id="quiz-question" class="question-class">
+        <div class="quiz-header">
+            <span class="q-category">Category :</span>
+            <span id="display-category" class="q-value"></span>
+
+            <span class="q-question">Questions :</span>
+            <span id="num-question" class="q-value"></span>
+        </div>
+
+        <div class="quiz-timers">
+            <span id="display-time-quiz" class="timer-question"></span>
+            <span id="display-overall-time" class="timer-overall"></span>
+        </div>
+
+        <div id="question-section" class="question-section">
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>Progress: <span id="progress-text">0%</span></span>
+                </div>
+                <div id="display-all-question" class="question-box"></div>
+            </div>
+            <div class="quiz-buttons">
+                <button id="previous" class="btn prev-btn">Previous</button>
+                <button id="next" class="btn next-btn" disabled>Next</button>
+                <button id="submit-quiz" class="btn submit-btn">Submit Quiz</button>
+            </div>
+        </div>
+
+    </div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+
+</html>

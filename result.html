@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Result</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="nav-bar">
+        <h3 class="nav-title">My Quiz app</h3>
+    </nav>
+
+    <div id="result-quiz" class="result-card">
+        <h2 class="result-title">Quiz Result</h2>
+
+        <p class="result-label">Score</p>
+        <span id="display-score" class="result-score"></span>
+
+        <p id="time-taken" class="result-time"></p>
+
+        <div class="result-buttons">
+            <button id="view-answer" class="btn btn-review">Review Answer</button>
+            <button id="retry-quiz" class="btn btn-retry">Retry</button>
+            <button class="btn btn-home" onclick="location.href='home.html'">Home</button>
+        </div>
+    </div>
+
+    <div id="attempt-container" class="attempt-wrapper">
+        <div id="attempted-detail-section" class="attempt-table"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
