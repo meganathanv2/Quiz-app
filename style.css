@@ -13,6 +13,8 @@ body {
     align-items: center;
 }
 
+
+
 .nav-bar {
     width: 100%;
     background: #1e1e2f;
@@ -117,13 +119,14 @@ select:focus {
 
 .question-class {
     background: #fff;
-    width: 90%;
+    width: 100%;
     max-width: 850px;
-    margin-top: 30px;
+    margin: 30px auto;
     padding: 25px;
     border-radius: 14px;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
 }
+
 
 .quiz-header {
     display: flex;
@@ -149,6 +152,11 @@ select:focus {
     font-weight: bold;
 }
 
+.hidden {
+    display: none !important;
+}
+
+
 .timer-question {
     color: #e63946;
 }
@@ -159,7 +167,16 @@ select:focus {
 
 .question-section {
     margin-top: 20px;
+    min-height: 200px;
 }
+
+.page-wrapper {
+    width: 100%;
+    padding: 0 16px;
+    display: flex;
+    justify-content: center;
+}
+
 
 .progress-title {
     color: #444;
@@ -230,6 +247,10 @@ select:focus {
 }
 
 @media (max-width: 600px) {
+    .question-class {
+        padding: 20px;
+    }
+
     .quiz-buttons {
         flex-direction: column;
     }
@@ -243,6 +264,7 @@ select:focus {
         gap: 6px;
     }
 }
+
 
 .result-card {
     background: #ffffff;
@@ -367,7 +389,9 @@ select:focus {
     background: #ffffff;
     border-radius: 14px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
 }
+
 
 .review-title {
     text-align: center;
@@ -391,17 +415,18 @@ select:focus {
 .review-list p {
     font-size: 14px;
     margin: 4px 0;
-    color: #444;
 }
 
-.review-list p:nth-child(2) {
-    color: #e63946;
-}
-
-.review-list p:nth-child(3) {
+.review-list .answer-correct {
     color: #38b000;
     font-weight: 600;
 }
+
+.review-list .answer-wrong {
+    color: #e63946;
+    font-weight: 600;
+}
+
 
 @media (max-width: 600px) {
     .review-container {
