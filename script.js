@@ -171,7 +171,7 @@ let selectedCategory = "";
 let selectedDifficulty = "";
 let currentQuestion = [];
 let currentIndex = 0;
-let timePerQuestion = 20;
+let timePerQuestion = 15;
 let countdown;
 let overallTime = 0;
 let overallTimerId;
@@ -196,6 +196,13 @@ const attemptedDetailButton = document.getElementById("attempted-detail");
 const progressBar = document.getElementById("progress-bar");
 const progressText = document.getElementById("progress-text");
 const backToResultBtn = document.getElementById("back-to-result");
+const scoreDbms = document.getElementById("score-dbms");
+const scoreOs = document.getElementById("score-os");
+const scoreJava = document.getElementById("score-java");
+
+window.onload = () => {
+    maxScoreCategory();
+}
 
 
 window.addEventListener("beforeunload", () => {
@@ -337,13 +344,13 @@ function startTimer() {
             saveAnswer();
 
             if (currentIndex < currentQuestion.length - 1) {
-                currentIndex++;
+                // currentIndex++;
                 showQuestion();
             } else {
                 localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
                 calculateScore();
                 localStorage.setItem("attemptSaved", "false");
-                window.location.href = "result.html";
+                // window.location.href = "result.html";
             }
         }
 
@@ -376,13 +383,17 @@ function saveAnswer() {
 
 if (submitButton) {
     submitButton.addEventListener("click", () => {
+        const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
+        if (!confirmSubmit) return;
         saveAnswer();
         localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
         calculateScore();
         localStorage.setItem("attemptSaved", "false");
+
         window.location.href = "result.html";
     });
 }
+
 
 function calculateScore() {
     score = 0;
@@ -547,7 +558,6 @@ function saveAttemptedLocalStorage() {
 
 }
 
-
 function startOverallTimer() {
     if (!timeDisplay) return;
     clearInterval(overallTimerId);
@@ -589,4 +599,18 @@ if (reviewAnswerButton) {
     });
 }
 
+function maxScoreCategory(){
+    const attempts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
+    const categoryScores = {};
+    attempts.forEach(attempt => {
+        const category=attempt.category;
+        const score=Number(attempt.score);
+        if(!categoryScores[category] || score>categoryScores[category]){
+            categoryScores[category]=score;
+        }
+    });
+    scoreDbms.textContent=`DBMS: ${categoryScores["DBMS"] || 0}/15`;
+    scoreOs.textContent=`OS: ${categoryScores["OS"] || 0}/15`;
+    scoreJava.textContent=`Java: ${categoryScores["Java"] || 0}/15`;
+}
 
