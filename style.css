@@ -17,9 +17,12 @@ body {
 
 .nav-bar {
     width: 100%;
-    background: #15156a;
+    background: #19197a;
     padding: 15px 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    top: 0%;
+    position: fixed;
+
 }
 
 .nav-title {
@@ -29,9 +32,9 @@ body {
 }
 
 .main-div {
-    margin-top: 60px;
+    margin-top: 80px;
     background: #ffffff;
-    width: 420px;
+    max-width: 450px;
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
@@ -118,7 +121,7 @@ select:focus {
 }
 
 .score-item {
-    flex: 1;
+     
     background: #ffffff;
     padding: 10px;
     border-radius: 10px;
@@ -137,36 +140,47 @@ select:focus {
 }
 
 
-@media (max-width: 768px) {
-    .nav-title {
-        font-size: 20px;
+@media (max-width: 480px) {
+    .nav-bar {
+        padding: 12px;
         text-align: center;
     }
 
-    .main-div {
-        margin-top: 40px;
-        padding: 25px;
+    .nav-title {
+        font-size: 18px;
     }
-}
 
-@media (max-width: 480px) {
     .main-div {
-        margin-top: 30px;
         padding: 20px;
         border-radius: 12px;
     }
 
+    select {
+        font-size: 14px;
+        padding: 9px;
+    }
+
     .start-button {
         font-size: 15px;
-        padding: 10px;
+        padding: 11px;
+    }
+
+    .scores-list {
+        flex-direction: column;
+    }
+
+    .score-item {
+        font-size: 13px;
     }
 }
+
+
 
 .question-class {
     background: #fff;
     width: 100%;
     max-width: 850px;
-    margin: 30px auto;
+    margin: 90px auto;
     padding: 25px;
     border-radius: 14px;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
@@ -203,7 +217,7 @@ select:focus {
 
 
 .timer-question {
-    color: #e63946;
+    color: black;
 }
 
 .timer-overall {
@@ -315,7 +329,7 @@ select:focus {
     background: #ffffff;
     width: 90%;
     max-width: 500px;
-    margin: 40px auto;
+    margin: 90px auto;
     padding: 25px;
     border-radius: 14px;
     text-align: center;
@@ -429,12 +443,11 @@ select:focus {
 .review-container {
     width: 90%;
     max-width: 900px;
-    margin: 40px auto;
+    margin: 90px auto;
     padding: 25px;
     background: #ffffff;
     border-radius: 14px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-    position: relative;
 }
 
 

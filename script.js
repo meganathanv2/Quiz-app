@@ -200,9 +200,7 @@ const scoreDbms = document.getElementById("score-dbms");
 const scoreOs = document.getElementById("score-os");
 const scoreJava = document.getElementById("score-java");
 
-window.onload = () => {
-    maxScoreCategory();
-}
+
 
 
 window.addEventListener("beforeunload", () => {
@@ -210,211 +208,18 @@ window.addEventListener("beforeunload", () => {
     clearInterval(countdown);
 });
 
-
-if (startButton) {
-    startButton.addEventListener("click", () => {
-        selectedCategory = document.getElementById("category").value;
-        selectedDifficulty = document.getElementById("difficulty").value;
-
-        localStorage.setItem("category", selectedCategory);
-        localStorage.setItem("difficulty", selectedDifficulty);
-
-        localStorage.setItem("startTimestamp", Date.now());
-        localStorage.setItem(
-            "startTime",
-            new Date().toString().split("GMT")[0].trim()
-        );
-
-        localStorage.removeItem("score");
-        localStorage.setItem("userAnswers", JSON.stringify([]));
-
-        window.location.href = "quiz.html";
-    });
-}
-
-
-
 function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
 }
-if (backToResultBtn) {
-    backToResultBtn.addEventListener("click", () => {
-        window.location.href = "result.html";
-    });
-}
-
-
-function showQuestion() {
-    stopTimer();
-    startTimer();
-
-    if (!questionDiv) return;
-
-    const q = currentQuestion[currentIndex];
-
-    displayCategory.textContent = selectedCategory;
-    displayNumQuestion.textContent = `${currentIndex + 1} of ${currentQuestion.length}`;
-
-    let html = "";
-    q.options.forEach((op, i) => {
-        html += `
-        <div>
-            <input type="radio"
-                   name="option"
-                   id="option${i}"
-                   value="${i}"
-                   onclick="enableNext()">
-            <label for="option${i}">${op}</label>
-        </div>`;
-    });
-
-    questionDiv.innerHTML = `<h3>${q.question}</h3>${html}`;
-
-    if (userAnswers[currentIndex] !== undefined) {
-        document.getElementById(`option${userAnswers[currentIndex]}`).checked = true;
-    }
-
-    if (arr[currentIndex] <= 0) {
-        lockOptions();
-        if (nextButton) nextButton.disabled = false;
-    }
-    if (prevButton) {
-        if (currentIndex === 0) {
-            prevButton.classList.add("hidden");
-        } else {
-            prevButton.classList.remove("hidden");
-        }
-    }
-    if (nextButton) nextButton.disabled = currentIndex === currentQuestion.length - 1;
-}
-
-
-
-
-function enableNext() {
-    if (arr[currentIndex] <= 0) return;
-
-    if (nextButton && currentIndex < currentQuestion.length - 1) {
-        nextButton.disabled = false;
-    }
-}
-
-
-
-if (nextButton) {
-    nextButton.addEventListener("click", () => {
-        saveAnswer();
-        if (currentIndex < currentQuestion.length - 1) {
-            currentIndex++;
-            showQuestion();
-        }
-    });
-}
-
-if (prevButton) {
-    prevButton.addEventListener("click", () => {
-        saveAnswer();
-        if (currentIndex > 0) {
-            currentIndex--;
-            showQuestion();
-        }
-    });
-}
-
-function startTimer() {
-    const element = document.getElementById("display-time-quiz");
-    if (!element) return;
-
-    clearInterval(countdown);
-
-    let t = arr[currentIndex] ?? timePerQuestion;
-    element.textContent = `Time Left : ${t}`;
-
-    countdown = setInterval(() => {
-        t--;
-        arr[currentIndex] = t;
-        element.textContent = `Time Left : ${t}`;
-        if (t <= 0) {
-            clearInterval(countdown);
-            arr[currentIndex] = 0;
-            lockOptions();
-            saveAnswer();
-
-            if (currentIndex < currentQuestion.length - 1) {
-                // currentIndex++;
-                showQuestion();
-            } else {
-                localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
-                calculateScore();
-                localStorage.setItem("attemptSaved", "false");
-                // window.location.href = "result.html";
-            }
-        }
-
-    }, 1000);
-}
-function lockOptions() {
-    const options = document.querySelectorAll('input[name="option"]');
-    options.forEach(op => op.disabled = true);
-}
-
-
-function stopTimer() {
-    clearInterval(countdown);
-}
-
-function saveAnswer() {
-    const sel = document.querySelector('input[name="option"]:checked');
-    if (!sel) return;
-
-    const previousAnswer = userAnswers[currentIndex];
-    const newAnswer = Number(sel.value);
-
-    userAnswers[currentIndex] = newAnswer;
-
-    if (previousAnswer === undefined) {
-        calculateProgress();
-    }
-}
-
-
-if (submitButton) {
-    submitButton.addEventListener("click", () => {
-        const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
-        if (!confirmSubmit) return;
-        saveAnswer();
-        localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
-        calculateScore();
-        localStorage.setItem("attemptSaved", "false");
-
-        window.location.href = "result.html";
-    });
-}
-
-
-function calculateScore() {
-    score = 0;
-    currentQuestion.forEach((q, i) => {
-        if (userAnswers[i] === q.correctIndex) score++;
-    });
-    localStorage.setItem("score", score);
-}
-function calculateProgress() {
-    if (!currentQuestion.length) {
-        progressText.textContent = "0%";
-        return;
-    }
-
-    const answeredCount = userAnswers.filter(ans => ans !== undefined).length;
-    const progressPercent = (answeredCount / currentQuestion.length) * 100;
-    progressText.textContent = `${progressPercent.toFixed(2)}%`;
-}
-
 
 document.addEventListener("DOMContentLoaded", () => {
+    if(document.getElementById("main-div")){
+
+        maxScoreCategory();
+    }
 
     if (document.getElementById("quiz-question")) {
 
@@ -532,6 +337,234 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 })
+
+if (startButton) {
+    startButton.addEventListener("click", () => {
+        selectedCategory = document.getElementById("category").value;
+        selectedDifficulty = document.getElementById("difficulty").value;
+
+        localStorage.setItem("category", selectedCategory);
+        localStorage.setItem("difficulty", selectedDifficulty);
+
+        localStorage.setItem("startTimestamp", Date.now());
+        localStorage.setItem(
+            "startTime",
+            new Date().toString().split("GMT")[0].trim()
+        );
+        localStorage.removeItem("score");
+        localStorage.setItem("userAnswers", JSON.stringify([]));
+
+        window.location.href = "quiz.html";
+    });
+}
+
+
+
+
+if (backToResultBtn) {
+    backToResultBtn.addEventListener("click", () => {
+        window.location.href = "result.html";
+    });
+}
+
+
+function showQuestion() {
+    stopTimer();
+    startTimer();
+
+    if (!questionDiv) return;
+
+    const q = currentQuestion[currentIndex];
+
+    displayCategory.textContent = selectedCategory;
+    displayNumQuestion.textContent = `${currentIndex + 1} of ${currentQuestion.length}`;
+
+    let html = "";
+    q.options.forEach((op, i) => {
+        html += `
+        <div>
+            <input type="radio"
+                   name="option"
+                   id="option${i}"
+                   value="${i}"
+                   onclick="enableNext()">
+            <label for="option${i}">${op}</label>
+        </div>`;
+    });
+    questionDiv.innerHTML = `<h3 >${q.question}</h3>${html}`;
+
+    if (userAnswers[currentIndex] !== undefined) {
+        document.getElementById(`option${userAnswers[currentIndex]}`).checked = true;
+    }
+
+    if (arr[currentIndex] <= 0) {
+        lockOptions();
+        if (nextButton) nextButton.disabled = false;
+    }
+    if (prevButton) {
+        if (currentIndex === 0) {
+            prevButton.classList.add("hidden");
+        } else {
+            prevButton.classList.remove("hidden");
+        }
+    }
+    if (nextButton) nextButton.disabled = currentIndex === currentQuestion.length - 1;
+}
+
+
+
+
+function enableNext() {
+    if (arr[currentIndex] <= 0) return;
+
+    if (nextButton && currentIndex < currentQuestion.length - 1) {
+        nextButton.disabled = false;
+    }
+}
+
+
+
+if (nextButton) {
+    nextButton.addEventListener("click", () => {
+        saveAnswer();
+        if (currentIndex < currentQuestion.length - 1) {
+            currentIndex++;
+            showQuestion();
+        }
+    });
+}
+
+if (prevButton) {
+    prevButton.addEventListener("click", () => {
+        saveAnswer();
+        if (currentIndex > 0) {
+            currentIndex--;
+            showQuestion();
+        }
+    });
+}
+
+if (submitButton) {
+    submitButton.addEventListener("click", () => {
+        const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
+        if (!confirmSubmit) return;
+        saveAnswer();
+        localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
+        calculateScore();
+        localStorage.setItem("attemptSaved", "false");
+        window.location.href = "result.html";
+    });
+}
+
+function startTimer() {
+    const element = document.getElementById("display-time-quiz");
+    if (!element) return;
+
+    clearInterval(countdown);
+
+    let t = arr[currentIndex] ?? timePerQuestion;
+    element.textContent = `Time Left : ${t}`;
+   
+
+    countdown = setInterval(() => {
+        t--;
+        arr[currentIndex] = t;
+        element.textContent = `Time Left : ${t}`;
+       if(t<10){
+        element.style.color = "red";
+       }
+       else{
+        element.style.color = "black";
+       }
+        if (t <= 0) {
+            clearInterval(countdown);
+            arr[currentIndex] = 0;
+            lockOptions();
+            saveAnswer();
+
+            if (currentIndex < currentQuestion.length - 1) {
+                // currentIndex++;
+                showQuestion();
+            } else {
+                localStorage.setItem("userAnswers", JSON.stringify(userAnswers));
+                calculateScore();
+                localStorage.setItem("attemptSaved", "false");
+                // window.location.href = "result.html";
+            }
+        }
+
+    }, 1000);
+    if(t===0){
+        element.style.color="red";
+    }else{
+
+        element.style.color = "black";
+    }
+}
+
+function startOverallTimer() {
+    if (!timeDisplay) return;
+    clearInterval(overallTimerId);
+    overallTimerId = setInterval(() => {
+        let m = Math.floor(overallTime / 60);
+        let s = overallTime % 60;
+        timeDisplay.textContent = `Overall Time Left :${m}:${s < 10 ? "0" : ""}${s}`;
+        overallTime--;
+        if (overallTime < 0) {
+            clearInterval(overallTimerId);
+            saveAnswer();
+            calculateScore();
+            localStorage.setItem("attemptSaved", "false");
+            window.location.href = "result.html";
+        }
+    }, 1000);
+}
+
+function lockOptions() {
+    const options = document.querySelectorAll('input[name="option"]');
+    options.forEach(op => op.disabled = true);
+}
+
+
+function stopTimer() {
+    clearInterval(countdown);
+}
+
+function saveAnswer() {
+    const sel = document.querySelector('input[name="option"]:checked');
+    if (!sel) return;
+
+    const previousAnswer = userAnswers[currentIndex];
+    const newAnswer = Number(sel.value);
+
+    userAnswers[currentIndex] = newAnswer;
+
+    if (previousAnswer === undefined) {
+        calculateProgress();
+    }
+}
+
+
+function calculateScore() {
+    score = 0;
+    currentQuestion.forEach((q, i) => {
+        if (userAnswers[i] === q.correctIndex) score++;
+    });
+    localStorage.setItem("score", score);
+}
+function calculateProgress(){
+    if (!currentQuestion.length) {
+        progressText.textContent = "0%";
+        return;
+    }
+
+    const answeredCount = userAnswers.filter(ans => ans !== undefined).length;
+    const progressPercent = (answeredCount / currentQuestion.length) * 100;
+    progressText.textContent = `${progressPercent.toFixed(2)}%`;
+}
+
+
+
 function saveAttemptedLocalStorage() {
     const attempts = JSON.parse(localStorage.getItem("attemptedDetail")) || [];
     const startTimestamp = Number(localStorage.getItem("startTimestamp"));
@@ -558,23 +591,7 @@ function saveAttemptedLocalStorage() {
 
 }
 
-function startOverallTimer() {
-    if (!timeDisplay) return;
-    clearInterval(overallTimerId);
-    overallTimerId = setInterval(() => {
-        let m = Math.floor(overallTime / 60);
-        let s = overallTime % 60;
-        timeDisplay.textContent = `Overall Time Left :${m}:${s < 10 ? "0" : ""}${s}`;
-        overallTime--;
-        if (overallTime < 0) {
-            clearInterval(overallTimerId);
-            saveAnswer();
-            calculateScore();
-            localStorage.setItem("attemptSaved", "false");
-            window.location.href = "result.html";
-        }
-    }, 1000);
-}
+
 
 if (retryButton) {
     retryButton.addEventListener("click", () => {
